@@ -9,19 +9,18 @@ class Client(Person):
         self.companies = []
 
         if isinstance(company, Company):
-            self.company.append(company)
+            self.companies.append(company)
         elif isinstance(company, list):
             for entry in company:
                 if not isinstance(entry, Company):
                     raise TypeError("Invalid Company...")
 
-            self.company = company
+            self.companies = company
 
     def add_company(self, company):
         if not isinstance(company, Company):
             raise TypeError("Invalid Company...")
-        
-        self.company.append(company)
+        self.companies.append(company)
 
     def is_subscribed(self, subscribed):
         return False
