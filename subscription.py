@@ -1,19 +1,23 @@
+import os
+from supabase import create_client, Client
 import datetime
-from project import Project
-from client import Client
+from client_user import Client as c_user
 
-today = datetime.date.today()
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(url, key)
 
 class Subscribe:
-    def __init__(self, client, project, subscription_date=today):
+    def __init__(self, client, subscription_date=datetime.date.today()):
         self.subscription_date = subscription_date
 
-        if isinstance(client, Client):
+        if isinstance(client, c_user):
             self.client = client
         else:
             raise ValueError("Invalid Client...")
-        
-        if isinstance(project, Project):
-            self.project = project
-        else:
-            raise ValueError("Invalid Project...")
+
+    def register_subscription(self, email, password):
+        res = supabase.auth.sign_up({
+        "email": email,
+        "password": password,
+        })

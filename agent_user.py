@@ -12,8 +12,9 @@ class AutoAgent(TeamMember):
         super().__init__(first, last, dob, email, phone, address, role, salary, project)
         self.tools = []
         self.name = f"{first} {last}"
-
-        if isinstance(tools, str):
+        
+        # validate tools field
+        if isinstance(tools, dict):
             self.tools.append(tools)
         elif isinstance(tools, list):
             for entry in tools:
@@ -22,25 +23,34 @@ class AutoAgent(TeamMember):
                 self.tools.append(entry)
         else:
             raise TypeError("Invalid Tool...")
-
-    def details(self):
-        print(f"Name: {self.name}\nRole: {self.role}\nTools: {self.tools}")
-
-    def work_on(self, instructions: str, llm=ChatOpenAI(temperature=0)):
+        
         # Define embedding model
         embeddings_model = OpenAIEmbeddings()
         # Initialize the vectorstore as empty
 
         embedding_size = 1536
         index = faiss.IndexFlatL2(embedding_size)
-        vectorstore = DeepLake(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+        self.vectorstore = DeepLake(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+
+
+    def details(self):
+        print(f"Name: {self.name}\nRole: {self.role}\nTools: {self.tools}")
+
+    def work_on(self, instructions: str):
+        agent = self.create_agent()
+        agent_response = agent.run([instructions])
+        return agent_response
+
+    def create_agent(self, llm=None):
+        if llm:
+            pass
+        else:
+            llm = ChatOpenAI(temperature=0.5)
         agent = AutoGPT.from_llm_and_tools(
             ai_name=self.name,
             ai_role=self.role,
             tools=self.tools,
             llm=llm,
-            memory=vectorstore.as_retriever()
+            memory=self.vectorstore.as_retriever()
             )
-        agent_response = agent.run([instructions])
-        return agent_response
-
+        return agent
