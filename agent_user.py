@@ -11,12 +11,14 @@ class AutoAgent(TeamMember):
     def __init__(self, first, last, dob, email, phone, address, role, salary, project, tools):
         super().__init__(first, last, dob, email, phone, address, role, salary, project)
         self.tools = []
-        self.name = f"{first} {last}"
-        
+        self.projects = []
+        self.fullname = f"{first} {last}"
+        self.email = email
+        self.phone = phone
+        self.role = role
+
         # validate tools field
-        if isinstance(tools, dict):
-            self.tools.append(tools)
-        elif isinstance(tools, list):
+        if isinstance(tools, list):
             for entry in tools:
                 if not isinstance(entry, str):
                     raise TypeError("Invalid Tool...")
@@ -34,7 +36,7 @@ class AutoAgent(TeamMember):
 
 
     def details(self):
-        print(f"Name: {self.name}\nRole: {self.role}\nTools: {self.tools}")
+        print(f"Name: {self.fullname}\nRole: {self.role}\nTools: {self.tools}")
 
     def work_on(self, instructions: str):
         agent = self.create_agent()
@@ -47,7 +49,7 @@ class AutoAgent(TeamMember):
         else:
             llm = ChatOpenAI(temperature=0.5)
         agent = AutoGPT.from_llm_and_tools(
-            ai_name=self.name,
+            ai_name=self.fullname,
             ai_role=self.role,
             tools=self.tools,
             llm=llm,
