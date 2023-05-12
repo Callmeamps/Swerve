@@ -27,26 +27,26 @@ class CustomCopy:
 
     # save post to Posts Table in Supabase
     class SavePost:
-        def __init__(self, title, id):
-            id = 0
-            self.id = id
+        def __init__(self, title, id_field):
+            id_field = 0
+            self.id = id_field
             self.title = title
 
         
         def create_entry(self, post):
-            data = supabase.table('Posts').insert({"id": self.id, "title": self.title, "copy": post}).execute()
+            supabase.table('Posts').insert({"id": self.id, "title": self.title, "copy": post}).execute()
         def update_title(self, title):
-            data = supabase.table('Posts').update({"id": self.id, "title": title}).execute()
+            supabase.table('Posts').update({"id": self.id, "title": title}).execute()
         def add_summary(self, summary):
-            data = supabase.table('Posts').update({"id": self.id, "summary": summary}).execute()
+            supabase.table('Posts').update({"id": self.id, "summary": summary}).execute()
         def add_featured_img(self, img_url):
-            data = supabase.table('Posts').update({"id": self.id, "featured_image": img_url}).execute()
+            supabase.table('Posts').update({"id": self.id, "featured_image": img_url}).execute()
         def add_post_imgs(self, img_urls):
             if isinstance(img_urls, list):
                 for img_url in img_urls:
-                    data = supabase.table('Posts').update({"post_images": img_url}).execute()
+                    supabase.table('Posts').update({"post_images": img_url}).execute()
             else:
-                data = supabase.table('Posts').update({"post_images": img_urls}).execute()
+                supabase.table('Posts').update({"post_images": img_urls}).execute()
 
     # save deliverable to Deliverables Table in Supabase
 
@@ -58,12 +58,13 @@ class CustomCopy:
     def write_post(self, post_topic):
         template = """
         Write an article about the given topic. Make the article interesting and informative.
+        Always write using markdown syntax.
         Topic: {topic}"""
         repo_id = "mosaicml/mpt-7b-storywriter"
-        mpt_65k = HuggingFaceHub(repo_id=repo_id, model_kwargs={"temperature":0, "max_length":64})
+        mpt_65k = HuggingFaceHub(repo_id=repo_id, model_kwargs={"temperature":0.3, "max_length":6000})
         prompt = PromptTemplate(template=template, input_variables=["topic"])
-        llm_chain = LLMChain(prompt=prompt, llm=mpt_65k, verbose=True)
-
+        llm_chain = LLMChain(prompt=prompt, llm=mpt_65k, verbose=False)
         question = post_topic
 
-        llm_chain.predict(question=question)
+        response = llm_chain.predict(question=question)
+        self.save_md(response)

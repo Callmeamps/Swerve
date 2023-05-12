@@ -7,3 +7,4 @@ wikipedia
 wolframalpha
 supabase
 anvil-uplink
+deeplake

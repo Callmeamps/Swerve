@@ -20,8 +20,6 @@ class AutoAgent(TeamMember):
         # validate tools field
         if isinstance(tools, list):
             for entry in tools:
-                if not isinstance(entry, str):
-                    raise TypeError("Invalid Tool...")
                 self.tools.append(entry)
         else:
             raise TypeError("Invalid Tool...")
