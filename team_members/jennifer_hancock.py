@@ -1,5 +1,5 @@
 from langchain.agents.tools import Tool
-import agent_user
+from agent_user import AutoAgent
 from address import Address
 from toolboxes.copywriter_tools import CustomCopy
 from toolboxes.basictools import BasicTools
@@ -18,15 +18,10 @@ jennifers_tools = [
     name="Write Post",
     func=CustomCopy.write_post,
     description="Save writing to Markdown."
-    ),
-    Tool(
-    name="Update Client",
-    func=BasicTools.update_user_on_projects,
-    description="When you need to update a client on the current status of a project."
     )
 ]
 
-jennifer_hancock = agent_user.AutoAgent(
+jennifer_hancock = AutoAgent(
     first="Jennifer",
     last="Hancock",
     dob="01/15/1990",

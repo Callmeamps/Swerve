@@ -2,7 +2,7 @@ from langchain.experimental import AutoGPT
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.docstore import InMemoryDocstore
-from langchain.vectorstores import DeepLake
+from langchain.vectorstores import FAISS
 import faiss
 from team import TeamMember
 import config
@@ -16,6 +16,7 @@ class AutoAgent(TeamMember):
         self.email = email
         self.phone = phone
         self.role = role
+        self.vectorstore = None
 
         # validate tools field
         if isinstance(tools, list):
@@ -23,25 +24,28 @@ class AutoAgent(TeamMember):
                 self.tools.append(entry)
         else:
             raise TypeError("Invalid Tool...")
+        self.create_empty_vector_embedding()
+        self.agent = self.create_agent()
         
+    def create_empty_vector_embedding(self):
         # Define embedding model
         embeddings_model = OpenAIEmbeddings()
         # Initialize the vectorstore as empty
 
         embedding_size = 1536
         index = faiss.IndexFlatL2(embedding_size)
-        self.vectorstore = DeepLake(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
+        self.vectorstore = FAISS(embeddings_model.embed_query, index, InMemoryDocstore({}), {})
 
 
     def details(self):
         print(f"Name: {self.fullname}\nRole: {self.role}\nTools: {self.tools}")
 
-    def work_on(self, instructions: str):
-        agent = self.create_agent()
-        agent_response = agent.run([instructions])
+    def work_on(self, instructions: str) -> str:
+        agent_response = self.agent.run([instructions])
         return agent_response
 
     def create_agent(self, llm=None):
+        vector_memory = self.vectorstore.as_retriever()
         if llm:
             pass
         else:
@@ -51,6 +55,6 @@ class AutoAgent(TeamMember):
             ai_role=self.role,
             tools=self.tools,
             llm=llm,
-            memory=self.vectorstore.as_retriever()
+            memory=vector_memory
             )
         return agent
